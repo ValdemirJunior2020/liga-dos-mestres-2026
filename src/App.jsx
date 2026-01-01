@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, NavLink } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
-import TopNav from "./components/TopNav.jsx";
 import { fetchJogadores, fetchRodadas } from "./utils/googleSheet.js";
 
 const SPREADSHEET_ID = "1LmQLHOR0DlcT_DwuwGm-4fWZ9ZkB4he6G0FO0X2nnBI";
@@ -32,6 +32,7 @@ function calcRanking(jogadores, rodadas) {
       total: Number(total.toFixed(2)),
       media,
       rodadas: rodadasJogadas,
+      pontosPorRodada: pontos,
     };
   });
 
@@ -57,6 +58,46 @@ function BadgeGold({ children }) {
   );
 }
 
+function Avatar({ name, url }) {
+  if (!url) return <div className="avatar-fallback" title={name} />;
+  return (
+    <img
+      src={url}
+      alt={name}
+      className="avatar"
+      referrerPolicy="no-referrer"
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+      }}
+    />
+  );
+}
+
+function TopNav() {
+  return (
+    <div className="topnav">
+      <div className="topnav-inner">
+        <a className="topnav-brand" href="#/">
+          <img className="topnav-logo-img" src="/logo.png" alt="Liga dos Mestres" />
+          <div className="topnav-title">Liga dos Mestres</div>
+        </a>
+
+        <div className="topnav-links">
+          <NavLink to="/" end className={({ isActive }) => `topnav-link ${isActive ? "active" : ""}`}>
+            Ranking
+          </NavLink>
+          <NavLink to="/rodadas" className={({ isActive }) => `topnav-link ${isActive ? "active" : ""}`}>
+            Rodadas
+          </NavLink>
+          <NavLink to="/zoeira" className={({ isActive }) => `topnav-link pill ${isActive ? "active" : ""}`}>
+            Hall da Zoeira
+          </NavLink>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RankingPage({ data }) {
   const { ranking, rodadaKeys } = data;
 
@@ -64,8 +105,8 @@ function RankingPage({ data }) {
     <div className="container py-4">
       <div className="card-dark mb-4">
         <div className="card-dark-header">
-          🏅 <strong>Ranking Geral</strong>{" "}
-          <span className="pill-auto ms-auto">Auto</span>
+          🏅 <strong>Ranking Geral</strong>
+          <span className="pill-auto">Auto</span>
         </div>
 
         <div className="card-dark-body">
@@ -84,45 +125,21 @@ function RankingPage({ data }) {
                   <th style={{ width: 120 }}>Rodadas</th>
                 </tr>
               </thead>
-
               <tbody>
                 {ranking.map((p, idx) => (
                   <tr key={p.nome}>
                     <td>
                       <strong>{idx + 1}</strong>
                     </td>
-
                     <td>
                       <div className="d-flex align-items-center gap-3">
-                        {/* FOTO */}
-                        {p.fotoUrl ? (
-                          <img
-                            src={p.fotoUrl}
-                            alt={p.nome}
-                            className="avatar"
-                            referrerPolicy="no-referrer"
-                            onError={(e) => {
-                              // fallback: hide img and show placeholder
-                              e.currentTarget.style.display = "none";
-                              const next = e.currentTarget.nextSibling;
-                              if (next) next.style.display = "inline-block";
-                            }}
-                          />
-                        ) : null}
-
-                        {/* fallback always exists (hidden if img works) */}
-                        <div
-                          className="avatar avatar-fallback"
-                          style={{ display: p.fotoUrl ? "none" : "inline-block" }}
-                        />
-
+                        <Avatar name={p.nome} url={p.fotoUrl} />
                         <div>
                           <div className="fw-bold">{p.nome}</div>
                           {p.funcao ? <BadgeGold>{p.funcao}</BadgeGold> : null}
                         </div>
                       </div>
                     </td>
-
                     <td>{p.total} pts</td>
                     <td>{p.media}</td>
                     <td>{p.rodadas}</td>
@@ -137,13 +154,83 @@ function RankingPage({ data }) {
   );
 }
 
-function RodadasPage() {
+function RodadasPage({ data }) {
+  const { ranking, rodadaKeys } = data;
+  const [selected, setSelected] = useState(rodadaKeys[0] || "R1");
+
+  useEffect(() => {
+    if (rodadaKeys.length && !rodadaKeys.includes(selected)) {
+      setSelected(rodadaKeys[0]);
+    }
+  }, [rodadaKeys, selected]);
+
+  const rodadaRows = useMemo(() => {
+    const rows = ranking.map((p) => ({
+      nome: p.nome,
+      funcao: p.funcao,
+      fotoUrl: p.fotoUrl,
+      pontos: Number(p.pontosPorRodada?.[selected] ?? 0),
+    }));
+    rows.sort((a, b) => b.pontos - a.pontos);
+    return rows;
+  }, [ranking, selected]);
+
   return (
     <div className="container py-4">
-      <div className="card-dark">
-        <div className="card-dark-header">📅 Rodadas</div>
+      <div className="card-dark mb-4">
+        <div className="card-dark-header">
+          📅 <strong>Rodadas</strong>
+          <span className="pill-auto">{selected}</span>
+        </div>
+
         <div className="card-dark-body">
-          <div className="text-muted">(Vamos montar essa página completa no próximo passo.)</div>
+          {/* Selector */}
+          <div className="d-flex flex-wrap gap-2 mb-3">
+            {rodadaKeys.map((r) => (
+              <button
+                key={r}
+                className={`btn ${r === selected ? "btn-warning" : "btn-outline-light"}`}
+                style={{ padding: "6px 12px", borderRadius: 12, fontWeight: 800 }}
+                onClick={() => setSelected(r)}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="table-responsive">
+            <table className="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style={{ width: 60 }}>#</th>
+                  <th>Jogador</th>
+                  <th style={{ width: 140 }}>Pontos ({selected})</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rodadaRows.map((p, idx) => (
+                  <tr key={p.nome}>
+                    <td><strong>{idx + 1}</strong></td>
+                    <td>
+                      <div className="d-flex align-items-center gap-3">
+                        <Avatar name={p.nome} url={p.fotoUrl} />
+                        <div>
+                          <div className="fw-bold">{p.nome}</div>
+                          {p.funcao ? <BadgeGold>{p.funcao}</BadgeGold> : null}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="fw-bold">{p.pontos} pts</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="small text-muted mt-3">
+            Dica: quando você preencher a planilha, isso aqui vai refletir automaticamente.
+          </div>
         </div>
       </div>
     </div>
@@ -156,7 +243,9 @@ function ZoeiraPage() {
       <div className="card-dark">
         <div className="card-dark-header">😄 Hall da Zoeira</div>
         <div className="card-dark-body">
-          <div className="text-muted">(Vamos montar essa página completa no próximo passo.)</div>
+          <div className="text-muted">
+            Próximo passo: aqui vamos colocar “zoeiras” por rodada, tipo maior mitada, maior zika, maior pipocada 😂
+          </div>
         </div>
       </div>
     </div>
@@ -169,33 +258,23 @@ export default function App() {
   const [jogadores, setJogadores] = useState([]);
   const [rodadas, setRodadas] = useState([]);
 
-  useEffect(() => {
-    let alive = true;
-
-    async function load() {
-      try {
-        setLoading(true);
-        setErr("");
-
-        const j = await fetchJogadores(SPREADSHEET_ID);
-        const r = await fetchRodadas(SPREADSHEET_ID);
-
-        if (!alive) return;
-        setJogadores(j);
-        setRodadas(r);
-      } catch (e) {
-        if (!alive) return;
-        setErr(e?.message || "Erro ao carregar dados.");
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
+  async function load() {
+    try {
+      setLoading(true);
+      setErr("");
+      const j = await fetchJogadores(SPREADSHEET_ID);
+      const r = await fetchRodadas(SPREADSHEET_ID);
+      setJogadores(j);
+      setRodadas(r);
+    } catch (e) {
+      setErr(e?.message || "Erro ao carregar dados.");
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     load();
-    return () => {
-      alive = false;
-    };
   }, []);
 
   const data = useMemo(() => calcRanking(jogadores, rodadas), [jogadores, rodadas]);
@@ -203,7 +282,6 @@ export default function App() {
   return (
     <HashRouter>
       <div className="app-bg">
-        {/* ✅ USE YOUR REAL NAVBAR COMPONENT */}
         <TopNav />
 
         {loading ? (
@@ -214,12 +292,17 @@ export default function App() {
           </div>
         ) : err ? (
           <div className="container py-5">
-            <div className="alert alert-danger">{err}</div>
+            <div className="alert alert-danger d-flex align-items-center justify-content-between gap-3">
+              <div>{err}</div>
+              <button className="btn btn-warning" onClick={load}>
+                Tentar novamente
+              </button>
+            </div>
           </div>
         ) : (
           <Routes>
             <Route path="/" element={<RankingPage data={data} />} />
-            <Route path="/rodadas" element={<RodadasPage />} />
+            <Route path="/rodadas" element={<RodadasPage data={data} />} />
             <Route path="/zoeira" element={<ZoeiraPage />} />
           </Routes>
         )}
