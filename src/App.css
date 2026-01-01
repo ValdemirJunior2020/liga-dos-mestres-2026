@@ -240,3 +240,19 @@ body{
     flex-wrap: wrap;
   }
 }
+/* ===== FIX: textos apagados no tema dark ===== */
+.text-muted,
+.small.text-muted {
+  color: rgba(255, 255, 255, 0.70) !important;
+}
+
+.card-dark-header,
+.card-dark-body {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Se tiver títulos que ficam apagados */
+h1, h2, h3, h4, h5, h6,
+strong {
+  color: rgba(255, 255, 255, 0.95);
+}
