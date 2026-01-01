@@ -1,41 +1,49 @@
+import { NavLink } from "react-router-dom";
+
 export default function TopNav() {
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-      <div className="container">
-        <a className="navbar-brand fw-bold" href="#">
-          🏆 Liga dos Mestres
-        </a>
+    <nav className="topnav">
+      <div className="topnav-inner">
+        
+        {/* LOGO + NOME */}
+        <NavLink to="/" className="topnav-brand">
+          <img
+            src="/logo.png"
+            alt="Liga dos Mestres"
+            className="topnav-logo-img"
+          />
+          <span className="topnav-title">Liga dos Mestres</span>
+        </NavLink>
 
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navMenu"
-          aria-controls="navMenu"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon" />
-        </button>
+        {/* LINKS */}
+        <div className="topnav-links">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `topnav-link ${isActive ? "active" : ""}`
+            }
+          >
+            Ranking
+          </NavLink>
 
-        <div className="collapse navbar-collapse" id="navMenu">
-          <ul className="navbar-nav ms-auto gap-2">
-            <li className="nav-item">
-              <a className="nav-link" href="#ranking">
-                Ranking
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#rodadas">
-                Rodadas
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#zoeira">
-                Hall da Zoeira
-              </a>
-            </li>
-          </ul>
+          <NavLink
+            to="/rodadas"
+            className={({ isActive }) =>
+              `topnav-link ${isActive ? "active" : ""}`
+            }
+          >
+            Rodadas
+          </NavLink>
+
+          <NavLink
+            to="/zoeira"
+            className={({ isActive }) =>
+              `topnav-link pill ${isActive ? "active" : ""}`
+            }
+          >
+            Hall da Zoeira
+          </NavLink>
         </div>
       </div>
     </nav>

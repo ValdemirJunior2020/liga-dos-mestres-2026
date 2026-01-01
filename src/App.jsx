@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { HashRouter, Routes, Route, NavLink } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 
+import TopNav from "./components/TopNav.jsx";
 import { fetchJogadores, fetchRodadas } from "./utils/googleSheet.js";
 
 const SPREADSHEET_ID = "1LmQLHOR0DlcT_DwuwGm-4fWZ9ZkB4he6G0FO0X2nnBI";
@@ -13,9 +13,7 @@ function calcRanking(jogadores, rodadas) {
     pontosMap.set(r.jogador, r.pontos || {});
   });
 
-  const rodadaKeys = rodadas.length
-    ? Object.keys(rodadas[0].pontos || {})
-    : [];
+  const rodadaKeys = rodadas.length ? Object.keys(rodadas[0].pontos || {}) : [];
 
   const ranking = jogadores.map((j) => {
     const pontos = pontosMap.get(j.nome) || {};
@@ -69,10 +67,10 @@ function RankingPage({ data }) {
           🏅 <strong>Ranking Geral</strong>{" "}
           <span className="pill-auto ms-auto">Auto</span>
         </div>
+
         <div className="card-dark-body">
           <div className="small text-muted mb-3">
-            Rodadas detectadas: {rodadaKeys.length} (
-            {rodadaKeys.join(", ")})
+            Rodadas detectadas: {rodadaKeys.length} ({rodadaKeys.join(", ")})
           </div>
 
           <div className="table-responsive">
@@ -86,10 +84,14 @@ function RankingPage({ data }) {
                   <th style={{ width: 120 }}>Rodadas</th>
                 </tr>
               </thead>
+
               <tbody>
                 {ranking.map((p, idx) => (
                   <tr key={p.nome}>
-                    <td><strong>{idx + 1}</strong></td>
+                    <td>
+                      <strong>{idx + 1}</strong>
+                    </td>
+
                     <td>
                       <div className="d-flex align-items-center gap-3">
                         {/* FOTO */}
@@ -100,12 +102,19 @@ function RankingPage({ data }) {
                             className="avatar"
                             referrerPolicy="no-referrer"
                             onError={(e) => {
+                              // fallback: hide img and show placeholder
                               e.currentTarget.style.display = "none";
+                              const next = e.currentTarget.nextSibling;
+                              if (next) next.style.display = "inline-block";
                             }}
                           />
-                        ) : (
-                          <div className="avatar avatar-fallback" />
-                        )}
+                        ) : null}
+
+                        {/* fallback always exists (hidden if img works) */}
+                        <div
+                          className="avatar avatar-fallback"
+                          style={{ display: p.fotoUrl ? "none" : "inline-block" }}
+                        />
 
                         <div>
                           <div className="fw-bold">{p.nome}</div>
@@ -113,6 +122,7 @@ function RankingPage({ data }) {
                         </div>
                       </div>
                     </td>
+
                     <td>{p.total} pts</td>
                     <td>{p.media}</td>
                     <td>{p.rodadas}</td>
@@ -121,7 +131,6 @@ function RankingPage({ data }) {
               </tbody>
             </table>
           </div>
-
         </div>
       </div>
     </div>
@@ -134,9 +143,7 @@ function RodadasPage() {
       <div className="card-dark">
         <div className="card-dark-header">📅 Rodadas</div>
         <div className="card-dark-body">
-          <div className="text-muted">
-            (Vamos montar essa página completa no próximo passo.)
-          </div>
+          <div className="text-muted">(Vamos montar essa página completa no próximo passo.)</div>
         </div>
       </div>
     </div>
@@ -149,9 +156,7 @@ function ZoeiraPage() {
       <div className="card-dark">
         <div className="card-dark-header">😄 Hall da Zoeira</div>
         <div className="card-dark-body">
-          <div className="text-muted">
-            (Vamos montar essa página completa no próximo passo.)
-          </div>
+          <div className="text-muted">(Vamos montar essa página completa no próximo passo.)</div>
         </div>
       </div>
     </div>
@@ -198,25 +203,8 @@ export default function App() {
   return (
     <HashRouter>
       <div className="app-bg">
-        <nav className="topbar">
-          <div className="container d-flex align-items-center justify-content-between">
-            <div className="brand">
-              🏆 <span className="brand-text">Liga dos Mestres</span>
-            </div>
-
-            <div className="navlinks">
-              <NavLink to="/" end className="navlink">
-                Ranking
-              </NavLink>
-              <NavLink to="/rodadas" className="navlink">
-                Rodadas
-              </NavLink>
-              <NavLink to="/zoeira" className="navlink">
-                Hall da Zoeira
-              </NavLink>
-            </div>
-          </div>
-        </nav>
+        {/* ✅ USE YOUR REAL NAVBAR COMPONENT */}
+        <TopNav />
 
         {loading ? (
           <div className="container py-5">
