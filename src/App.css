@@ -1,0 +1,161 @@
+/* ===========================
+   LIGA DOS MESTRES THEME
+   Dark + Gold + Subtle Glow
+   Mobile-first (Bootstrap friendly)
+=========================== */
+
+:root{
+  --bg1: #070707;
+  --bg2: #0c0c0c;
+  --gold: #f5c542;
+  --gold2:#ffdf80;
+  --goldBorder: rgba(245, 197, 66, 0.35);
+  --text50: rgba(255,255,255,0.65);
+  --card: rgba(10,10,10,0.88);
+  --card2: rgba(15,15,15,0.92);
+}
+
+/* Make the whole page match the poster vibe */
+html, body {
+  height: 100%;
+}
+
+body{
+  margin: 0;
+  color: #fff;
+  background:
+    radial-gradient(1200px 700px at 20% 10%, rgba(245, 197, 66, 0.12), transparent 60%),
+    radial-gradient(900px 600px at 85% 20%, rgba(0, 190, 120, 0.10), transparent 55%),
+    radial-gradient(900px 700px at 50% 90%, rgba(245, 197, 66, 0.08), transparent 60%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  background-attachment: fixed;
+}
+
+/* Navbar (TopNav) helpers */
+.navbar-dark{
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(245, 197, 66, 0.18);
+}
+
+.brand-gold{
+  letter-spacing: 0.2px;
+  text-shadow: 0 0 18px rgba(245,197,66,0.20);
+}
+
+/* Hero header */
+.hero{
+  background:
+    radial-gradient(900px 300px at 25% 20%, rgba(245, 197, 66, 0.20), transparent 65%),
+    radial-gradient(900px 300px at 80% 20%, rgba(0, 190, 120, 0.15), transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,0.60), rgba(0,0,0,0.15));
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.text-light-50{
+  color: var(--text50) !important;
+}
+
+/* Gold border card style like your image */
+.bg-black{
+  background: var(--card) !important;
+}
+
+.border-gold{
+  border: 1px solid var(--goldBorder) !important;
+}
+
+.shadow-soft{
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 0 30px rgba(245,197,66,0.06);
+  border-radius: 14px;
+}
+
+/* Card header */
+.card-header{
+  background: rgba(0,0,0,0.35) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Buttons */
+.btn-warning{
+  background: linear-gradient(180deg, #ffd66b, #f5c542) !important;
+  border: none !important;
+  color: #1a1200 !important;
+  box-shadow: 0 10px 25px rgba(245,197,66,0.18);
+}
+.btn-warning:hover{
+  filter: brightness(1.03);
+  box-shadow: 0 14px 30px rgba(245,197,66,0.22);
+}
+
+.btn-outline-light{
+  border-color: rgba(255,255,255,0.35) !important;
+  color: #fff !important;
+}
+.btn-outline-light:hover{
+  background: rgba(255,255,255,0.10) !important;
+}
+
+/* Tables */
+.table-dark{
+  --bs-table-bg: rgba(10,10,10,0.55);
+  --bs-table-striped-bg: rgba(255,255,255,0.03);
+  --bs-table-hover-bg: rgba(245,197,66,0.06);
+  border-color: rgba(255,255,255,0.08);
+}
+.table thead th{
+  color: rgba(255,255,255,0.85);
+  border-bottom-color: rgba(245,197,66,0.22) !important;
+}
+.table td, .table th{
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* List group to look like clean rows on dark */
+.list-group-item{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  color: #fff !important;
+}
+.list-group-item + .list-group-item{
+  border-top: none !important;
+}
+
+/* Make the big white box match theme (your current list) */
+.theme-panel{
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(245,197,66,0.20);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Small responsive polish */
+@media (max-width: 576px){
+  .hero img{
+    height: 44px !important;
+  }
+  .shadow-soft{
+    border-radius: 12px;
+  }
+}
+/* Avatar padrão */
+.avatar {
+  width: 56px;          /* tamanho ideal p/ ranking */
+  height: 56px;
+  border-radius: 50%;   /* redondo */
+  object-fit: cover;    /* não estica a foto */
+  border: 2px solid #d4af37; /* dourado */
+  background: #111;
+}
+
+/* Fallback quando não tem foto */
+.avatar-fallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #333, #111);
+  border: 2px solid #555;
+}
