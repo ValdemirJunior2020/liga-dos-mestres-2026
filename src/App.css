@@ -1,7 +1,6 @@
 /* ===========================
    LIGA DOS MESTRES THEME
    Dark + Gold + Subtle Glow
-   Mobile-first (Bootstrap friendly)
 =========================== */
 
 :root{
@@ -15,7 +14,6 @@
   --card2: rgba(15,15,15,0.92);
 }
 
-/* Make the whole page match the poster vibe */
 html, body {
   height: 100%;
 }
@@ -31,136 +29,7 @@ body{
   background-attachment: fixed;
 }
 
-/* Navbar (TopNav) helpers */
-.navbar-dark{
-  background: rgba(0,0,0,0.55) !important;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(245, 197, 66, 0.18);
-}
-
-.brand-gold{
-  letter-spacing: 0.2px;
-  text-shadow: 0 0 18px rgba(245,197,66,0.20);
-}
-
-/* Hero header */
-.hero{
-  background:
-    radial-gradient(900px 300px at 25% 20%, rgba(245, 197, 66, 0.20), transparent 65%),
-    radial-gradient(900px 300px at 80% 20%, rgba(0, 190, 120, 0.15), transparent 60%),
-    linear-gradient(180deg, rgba(0,0,0,0.60), rgba(0,0,0,0.15));
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.text-light-50{
-  color: var(--text50) !important;
-}
-
-/* Gold border card style like your image */
-.bg-black{
-  background: var(--card) !important;
-}
-
-.border-gold{
-  border: 1px solid var(--goldBorder) !important;
-}
-
-.shadow-soft{
-  box-shadow:
-    0 20px 60px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(255,255,255,0.03) inset,
-    0 0 30px rgba(245,197,66,0.06);
-  border-radius: 14px;
-}
-
-/* Card header */
-.card-header{
-  background: rgba(0,0,0,0.35) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-}
-
-/* Buttons */
-.btn-warning{
-  background: linear-gradient(180deg, #ffd66b, #f5c542) !important;
-  border: none !important;
-  color: #1a1200 !important;
-  box-shadow: 0 10px 25px rgba(245,197,66,0.18);
-}
-.btn-warning:hover{
-  filter: brightness(1.03);
-  box-shadow: 0 14px 30px rgba(245,197,66,0.22);
-}
-
-.btn-outline-light{
-  border-color: rgba(255,255,255,0.35) !important;
-  color: #fff !important;
-}
-.btn-outline-light:hover{
-  background: rgba(255,255,255,0.10) !important;
-}
-
-/* Tables */
-.table-dark{
-  --bs-table-bg: rgba(10,10,10,0.55);
-  --bs-table-striped-bg: rgba(255,255,255,0.03);
-  --bs-table-hover-bg: rgba(245,197,66,0.06);
-  border-color: rgba(255,255,255,0.08);
-}
-.table thead th{
-  color: rgba(255,255,255,0.85);
-  border-bottom-color: rgba(245,197,66,0.22) !important;
-}
-.table td, .table th{
-  border-color: rgba(255,255,255,0.08) !important;
-}
-
-/* List group to look like clean rows on dark */
-.list-group-item{
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
-  color: #fff !important;
-}
-.list-group-item + .list-group-item{
-  border-top: none !important;
-}
-
-/* Make the big white box match theme (your current list) */
-.theme-panel{
-  background: rgba(0,0,0,0.35);
-  border: 1px solid rgba(245,197,66,0.20);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-/* Small responsive polish */
-@media (max-width: 576px){
-  .hero img{
-    height: 44px !important;
-  }
-  .shadow-soft{
-    border-radius: 12px;
-  }
-}
-/* Avatar padrão */
-.avatar {
-  width: 56px;          /* tamanho ideal p/ ranking */
-  height: 56px;
-  border-radius: 50%;   /* redondo */
-  object-fit: cover;    /* não estica a foto */
-  border: 2px solid #d4af37; /* dourado */
-  background: #111;
-}
-
-/* Fallback quando não tem foto */
-.avatar-fallback {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #333, #111);
-  border: 2px solid #555;
-}
 /* ===== TOP NAV ===== */
-/* ===== TOP NAV (FORÇADO) ===== */
 .topnav {
   position: sticky;
   top: 0;
@@ -240,19 +109,216 @@ body{
     flex-wrap: wrap;
   }
 }
+
 /* ===== FIX: textos apagados no tema dark ===== */
 .text-muted,
 .small.text-muted {
   color: rgba(255, 255, 255, 0.70) !important;
 }
-
-.card-dark-header,
-.card-dark-body {
-  color: rgba(255, 255, 255, 0.92);
-}
-
-/* Se tiver títulos que ficam apagados */
 h1, h2, h3, h4, h5, h6,
 strong {
   color: rgba(255, 255, 255, 0.95);
+}
+
+/* ===== Card dark base ===== */
+.card-dark{
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(245,197,66,0.20);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 0 30px rgba(245,197,66,0.06);
+}
+.card-dark-header{
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.35);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-weight: 900;
+}
+.card-dark-body{
+  padding: 16px;
+  color: rgba(255,255,255,0.92);
+}
+
+.pill-auto{
+  display: inline-block;
+  margin-left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255, 215, 0, 0.40);
+  background: rgba(255, 215, 0, 0.08);
+}
+
+/* Buttons */
+.btn-warning{
+  background: linear-gradient(180deg, #ffd66b, #f5c542) !important;
+  border: none !important;
+  color: #1a1200 !important;
+  box-shadow: 0 10px 25px rgba(245,197,66,0.18);
+}
+.btn-warning:hover{
+  filter: brightness(1.03);
+  box-shadow: 0 14px 30px rgba(245,197,66,0.22);
+}
+.btn-outline-light{
+  border-color: rgba(255,255,255,0.35) !important;
+  color: #fff !important;
+}
+.btn-outline-light:hover{
+  background: rgba(255,255,255,0.10) !important;
+}
+
+/* Tables */
+.table-dark{
+  --bs-table-bg: rgba(10,10,10,0.55);
+  --bs-table-striped-bg: rgba(255,255,255,0.03);
+  --bs-table-hover-bg: rgba(245,197,66,0.06);
+  border-color: rgba(255,255,255,0.08);
+}
+.table thead th{
+  color: rgba(255,255,255,0.85);
+  border-bottom-color: rgba(245,197,66,0.22) !important;
+}
+.table td, .table th{
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* Badge gold */
+.badge-gold{
+  background: #d4af37;
+  color: #111;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 4px 10px;
+  display: inline-block;
+}
+
+/* Avatar */
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #d4af37;
+  background: #111;
+}
+.avatar-fallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #333, #111);
+  border: 2px solid #555;
+}
+
+/* ===== ZOEIRA UI ===== */
+.zoeira-list{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.zoeira-card{
+  border: 1px solid rgba(245,197,66,0.20);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.25);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.zoeira-tag{
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.2px;
+}
+.tag-mitada{ background: rgba(255,215,0,0.18); border: 1px solid rgba(255,215,0,0.50); color: #ffd700; }
+.tag-zika{ background: rgba(255,0,0,0.12); border: 1px solid rgba(255,0,0,0.35); color: #ff6b6b; }
+.tag-pipoca{ background: rgba(0,200,255,0.12); border: 1px solid rgba(0,200,255,0.35); color: #5dd9ff; }
+.tag-default{ background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+
+.zoeira-link{
+  color: #ffd700;
+  text-decoration: none;
+  font-weight: 900;
+}
+.zoeira-link:hover{
+  text-decoration: underline;
+}
+
+/* ===== CAMPEOES MODERNO ===== */
+.campeoes-wrap{
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.campeoes-year-title{
+  font-size: 20px;
+  font-weight: 1000;
+  margin: 8px 0 12px;
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 0 18px rgba(245,197,66,0.12);
+}
+.campeoes-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px){
+  .campeoes-grid{ grid-template-columns: 1fr; }
+}
+
+.campeoes-card{
+  border: 1px solid rgba(245,197,66,0.20);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.25);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.campeoes-card-title{
+  font-weight: 1000;
+  margin-bottom: 10px;
+}
+.campeoes-list{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.campeoes-row{
+  display: grid;
+  grid-template-columns: 44px 1fr 110px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.campeoes-pos{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  color: #111;
+  background: linear-gradient(180deg, #ffd66b, #f5c542);
+}
+.campeoes-team{
+  font-weight: 1000;
+}
+.campeoes-player{
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  margin-top: 2px;
+}
+.campeoes-points{
+  text-align: right;
+  font-weight: 1000;
+  color: rgba(255,255,255,0.9);
 }
