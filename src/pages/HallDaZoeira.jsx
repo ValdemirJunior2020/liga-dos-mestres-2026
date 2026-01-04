@@ -1,36 +1,38 @@
 // src/pages/HallDaZoeira.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { SHEET_ID } from "../config.js";
-import { fetchZoeira, fetchSheetByName } from "../utils/googleSheet.js";
+import { fetchZoeira } from "../utils/googleSheet.js";
 
 export default function HallDaZoeira() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [payload, setPayload] = useState(null);
+  const [view, setView] = useState({ ok: true, items: [], rodadas: [], message: "" });
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       setError("");
-      setPayload(null);
 
       try {
         if (!SHEET_ID) throw new Error("SHEET_ID vazio (config.js)");
 
-        // 1) tenta via função oficial
         const z = await fetchZoeira(SHEET_ID);
 
-        // Debug extra: pega cols/rows cru também (pra ver header real)
-        const raw = await fetchSheetByName(SHEET_ID, "Zoeira");
-
-        // eslint-disable-next-line no-console
-        console.log("ZOEIRA fetchZoeira() →", z);
-        // eslint-disable-next-line no-console
-        console.log("ZOEIRA RAW cols →", raw?.cols);
-        // eslint-disable-next-line no-console
-        console.log("ZOEIRA RAW first 5 rows →", (raw?.rows || []).slice(0, 5));
-
-        setPayload({ z, raw });
+        if (!z?.ok) {
+          setView({
+            ok: false,
+            message: z?.message || "Não consegui ler a aba Zoeira. Confira os cabeçalhos.",
+            items: [],
+            rodadas: [],
+          });
+        } else {
+          setView({
+            ok: true,
+            message: "",
+            items: z.items || [],
+            rodadas: z.rodadas || [],
+          });
+        }
       } catch (e) {
         setError(e?.message || "Erro ao carregar Hall da Zoeira");
       } finally {
@@ -38,27 +40,6 @@ export default function HallDaZoeira() {
       }
     })();
   }, []);
-
-  const view = useMemo(() => {
-    const z = payload?.z;
-    if (!z) return null;
-
-    if (!z.ok) {
-      return {
-        ok: false,
-        message: z.message || "fetchZoeira retornou ok=false",
-        items: [],
-        rodadas: [],
-      };
-    }
-
-    return {
-      ok: true,
-      message: "",
-      items: z.items || [],
-      rodadas: z.rodadas || [],
-    };
-  }, [payload]);
 
   return (
     <div style={styles.wrap}>
@@ -68,40 +49,13 @@ export default function HallDaZoeira() {
       {loading ? <div style={styles.box}>Carregando...</div> : null}
       {error ? <div style={styles.err}>{error}</div> : null}
 
-      {!loading && !error && payload ? (
+      {!loading && !error ? (
         <>
-          {/* Debug card (mostra o que veio do Sheet) */}
-          <div style={styles.debug}>
-            <div style={{ fontWeight: 900, marginBottom: 8 }}>🧪 Debug</div>
-            <div style={styles.debugLine}>
-              <span style={styles.debugKey}>SHEET_ID:</span> {SHEET_ID}
-            </div>
-            <div style={styles.debugLine}>
-              <span style={styles.debugKey}>cols (aba Zoeira):</span>{" "}
-              {(payload.raw?.cols || []).join(" | ") || "(vazio)"}
-            </div>
-            <div style={styles.debugLine}>
-              <span style={styles.debugKey}>rows count:</span>{" "}
-              {(payload.raw?.rows || []).length}
-            </div>
-            <div style={styles.debugLine}>
-              <span style={styles.debugKey}>fetchZoeira ok:</span>{" "}
-              {String(payload.z?.ok)}
-            </div>
-            {payload.z?.message ? (
-              <div style={styles.debugLine}>
-                <span style={styles.debugKey}>message:</span> {payload.z.message}
-              </div>
-            ) : null}
-          </div>
-
-          {/* Conteúdo */}
-          {view?.ok ? (
+          {view.ok ? (
             <ZoeiraList items={view.items} />
           ) : (
             <div style={styles.err}>
-              {view?.message ||
-                "Não consegui ler a aba Zoeira. Confira os cabeçalhos."}
+              {view.message}
               <div style={{ marginTop: 8, opacity: 0.85 }}>
                 Cabeçalho esperado (linha 1):
                 <br />
@@ -116,16 +70,15 @@ export default function HallDaZoeira() {
 }
 
 function ZoeiraList({ items }) {
-  // agrupa por rodada
   const grouped = useMemo(() => {
     const map = new Map();
+
     (items || []).forEach((it) => {
       const key = String(it.rodada || "").trim() || "Sem rodada";
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(it);
     });
 
-    // ordena rodadas por número
     const keys = Array.from(map.keys()).sort((a, b) => {
       const na = Number(String(a).replace(/[^0-9]/g, "")) || 0;
       const nb = Number(String(b).replace(/[^0-9]/g, "")) || 0;
@@ -143,7 +96,7 @@ function ZoeiraList({ items }) {
 
           <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
             {g.items.map((it, idx) => (
-              <div key={idx} style={styles.item}>
+              <div key={`${g.rodada}-${idx}`} style={styles.item}>
                 <div style={styles.itemTop}>
                   <span style={styles.badge}>{it.tipo}</span>
                   <span style={styles.player}>{it.jogador}</span>
@@ -162,9 +115,7 @@ function ZoeiraList({ items }) {
         </div>
       ))}
 
-      {!grouped.length ? (
-        <div style={styles.box}>Nenhum item encontrado na aba Zoeira.</div>
-      ) : null}
+      {!grouped.length ? <div style={styles.box}>Nenhum item encontrado na aba Zoeira.</div> : null}
     </div>
   );
 }
@@ -194,17 +145,6 @@ const styles = {
     padding: 12,
     fontWeight: 800,
   },
-
-  debug: {
-    marginTop: 12,
-    border: "1px solid rgba(255,255,255,.12)",
-    background: "rgba(0,0,0,.22)",
-    borderRadius: 14,
-    padding: 12,
-    fontSize: 13,
-  },
-  debugLine: { marginTop: 6, opacity: 0.92 },
-  debugKey: { fontWeight: 900, color: "rgba(255,255,255,.85)" },
 
   card: {
     border: "1px solid rgba(255,255,255,.10)",
