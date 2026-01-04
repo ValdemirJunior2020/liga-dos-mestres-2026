@@ -4,11 +4,9 @@ function extractDriveId(url = "") {
   try {
     const u = String(url).trim();
 
-    // Example: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
     const m1 = u.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
     if (m1?.[1]) return m1[1];
 
-    // Example: https://drive.google.com/uc?export=view&id=FILE_ID
     const m2 = u.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (m2?.[1]) return m2[1];
 
@@ -22,7 +20,6 @@ function normalizePhotoUrl(url) {
   const raw = String(url || "").trim();
   if (!raw) return "";
 
-  // If it's a Google Drive link, convert to a stable thumbnail URL:
   const driveId = extractDriveId(raw);
   if (driveId) {
     return `https://drive.google.com/thumbnail?id=${driveId}&sz=w200`;
@@ -31,23 +28,16 @@ function normalizePhotoUrl(url) {
   return raw;
 }
 
-/**
- * Google Sheets GVIZ sometimes returns:
- * - cols labels empty
- * - first row has the headers, but cols labels are blank
- * This function fixes that by using row1 as header when needed.
- */
 function normalizeGvizTableToHeaderRows(cols, rows) {
   const safeCols = (cols || []).map((c) => String(c || "").trim());
   const safeRows = (rows || []).map((r) => (Array.isArray(r) ? r : []));
 
-  // Case A: cols labels are good (not all empty)
   const hasUsefulLabels = safeCols.some((c) => c && c.toLowerCase() !== "a" && c.toLowerCase() !== "b");
   if (hasUsefulLabels) {
     return { header: safeCols, dataRows: safeRows };
   }
 
-  // Case B: use first row as header
+  // use first row as header
   const first = safeRows[0] || [];
   const header = first.map((v) => String(v || "").trim());
   const dataRows = safeRows.slice(1);
@@ -61,12 +51,15 @@ export async function fetchSheetByName(spreadsheetId, sheetName) {
   )}`;
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ao buscar sheet="${sheetName}"`);
+  if (!res.ok) throw new Error(`GVIZ(sheet) HTTP ${res.status} | sheet="${sheetName}"`);
 
   const text = await res.text();
 
-  // Google wraps JSON: google.visualization.Query.setResponse(...)
-  const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end === -1) throw new Error(`Resposta GVIZ inválida para sheet="${sheetName}"`);
+
+  const jsonText = text.substring(start, end + 1);
   const data = JSON.parse(jsonText);
 
   const table = data?.table || {};
@@ -83,8 +76,17 @@ export async function fetchSheetByName(spreadsheetId, sheetName) {
   };
 }
 
+function norm(s) {
+  return String(s ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function idx(cols, name) {
-  return cols.findIndex((c) => String(c || "").trim().toLowerCase() === String(name).trim().toLowerCase());
+  const target = norm(name);
+  return (cols || []).findIndex((c) => norm(c) === target);
 }
 
 /** ---------------------------
@@ -116,19 +118,57 @@ export async function fetchJogadores(spreadsheetId) {
 }
 
 /** ---------------------------
- *  RODADAS
- *  First column: Jogador
- *  Then columns: R1, R2, R3...
+ *  RODADAS (BULLETPROOF)
+ *  First col: Jogador (or Nome/Player/Jogadores)
+ *  Then columns: R1..R38 (accepts: R1, R01, Rodada 1, "R 1", etc)
  * -------------------------- */
 export async function fetchRodadas(spreadsheetId) {
+  // always use the real tab name:
   const { cols, rows } = await fetchSheetByName(spreadsheetId, "Rodadas");
 
-  const iJogador = cols.findIndex((c) => String(c || "").trim().toLowerCase() === "jogador");
+  // Find jogador column by multiple possible names
+  const possibleJogadorHeaders = ["Jogador", "Jogadores", "Nome", "Player", "Participante"];
+  let iJogador = -1;
+  for (const h of possibleJogadorHeaders) {
+    const i = idx(cols, h);
+    if (i !== -1) {
+      iJogador = i;
+      break;
+    }
+  }
 
+  // Fallback: assume first column is jogador if headers are weird
+  if (iJogador === -1) iJogador = 0;
+
+  // Find rodada columns robustly
+  // Accept:
+  // - R1, R2...
+  // - R01
+  // - "Rodada 1"
+  // - "R 1"
   const rodadaCols = cols
-    .map((c, i) => ({ c: String(c || "").trim(), i }))
-    .filter((x) => /^r\d+$/i.test(x.c))
+    .map((c, i) => ({ raw: String(c || ""), c: norm(c), i }))
+    .filter((x) => {
+      const raw = x.raw.trim();
+
+      // R1 or R01 or R 1
+      if (/^r\s*\d+$/i.test(raw)) return true;
+
+      // "Rodada 1"
+      if (/^rodada\s*\d+$/i.test(raw)) return true;
+
+      // sometimes header comes as just "1", "2" etc (not recommended)
+      if (/^\d+$/.test(raw) && Number(raw) >= 1 && Number(raw) <= 99) return true;
+
+      return false;
+    })
     .map((x) => x.i);
+
+  if (!rodadaCols.length) {
+    throw new Error(
+      `Aba "Rodadas" encontrada, mas não achei colunas de rodada (R1, R2...). Confira os cabeçalhos da primeira linha.`
+    );
+  }
 
   return rows
     .map((r) => {
@@ -137,10 +177,31 @@ export async function fetchRodadas(spreadsheetId) {
 
       const pontos = {};
       rodadaCols.forEach((colIndex) => {
-        const rodadaName = String(cols[colIndex]).trim(); // R1, R2...
+        const header = String(cols[colIndex] || "").trim();
+
+        // Normalize key name to Rn
+        let rodadaKey = header;
+
+        // "Rodada 1" -> "R1"
+        const mRod = header.match(/rodada\s*(\d+)/i);
+        if (mRod?.[1]) rodadaKey = `R${Number(mRod[1])}`;
+
+        // "R 01" -> "R1"
+        const mR = header.match(/^r\s*(\d+)$/i);
+        if (mR?.[1]) rodadaKey = `R${Number(mR[1])}`;
+
+        // "01" -> "R1"
+        if (/^\d+$/.test(header)) rodadaKey = `R${Number(header)}`;
+
         const val = r[colIndex];
-        const num = val === "" ? "" : Number(val);
-        pontos[rodadaName] = Number.isFinite(num) ? num : "";
+
+        // convert to number if possible
+        if (val === "" || val == null) {
+          pontos[rodadaKey] = "";
+        } else {
+          const num = Number(val);
+          pontos[rodadaKey] = Number.isFinite(num) ? num : "";
+        }
       });
 
       return { jogador, pontos };
@@ -150,7 +211,7 @@ export async function fetchRodadas(spreadsheetId) {
 
 /** ---------------------------
  *  ZOEIRA
- *  Columns expected (row1):
+ *  Columns expected:
  *  Rodada | Tipo | Jogador | Texto | Link
  * -------------------------- */
 export async function fetchZoeira(spreadsheetId) {
@@ -227,7 +288,7 @@ export async function fetchCampeoes(spreadsheetId) {
   const items = rows
     .map((r) => {
       const ano = String(r[iAno] || "").trim();
-      const competicao = String(r[iComp] || "").trim(); // Liga / Copa
+      const competicao = String(r[iComp] || "").trim();
       const posicao = String(r[iPos] || "").trim();
       const time = String(r[iTime] || "").trim();
       const jogador = String(r[iJog] || "").trim();
@@ -240,15 +301,7 @@ export async function fetchCampeoes(spreadsheetId) {
       const pontosNum = pontosRaw === "" ? "" : Number(pontosRaw);
       const pontos = Number.isFinite(pontosNum) ? pontosNum : "";
 
-      return {
-        ano,
-        competicao,
-        posicao,
-        time,
-        jogador,
-        pontos,
-        link,
-      };
+      return { ano, competicao, posicao, time, jogador, pontos, link };
     })
     .filter(Boolean);
 
